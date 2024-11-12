@@ -37,11 +37,16 @@ def join_conference():
     # Add participant to conference
     dial.conference(
         'MeetingRoom',
-        record='record-from-start',
+        record=True,
+        # record='record-from-start',
         recordingStatusCallback='https://voice-meeting-summarizer.onrender.com/recording-callback',
+        recordingStatusCallbackEvent='in-progress completed',
         statusCallback='https://voice-meeting-summarizer.onrender.com/conference-status',
         statusCallbackEvent='start end join leave',
-        waitUrl='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical'
+        waitUrl='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical',
+        recording_status_callback_method='POST',
+        recording_status_callback_event='in-progress completed absent',
+        recording_channels='mono',
     )
     
     response.append(dial)
