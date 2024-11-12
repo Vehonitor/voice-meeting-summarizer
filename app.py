@@ -78,9 +78,6 @@ def conference_status():
     conference_sid = request.values.get('ConferenceSid')
     event_type = request.values.get('StatusCallbackEvent')
     
-    logger.info("=== conference sid", conference_sid)
-    logger.info("==event type=====", event_type)
-    
     print(f"Conference {conference_sid} event: {event_type}")
     
     return "OK"
