@@ -55,22 +55,48 @@ def join_conference():
     response.append(dial)
     return Response(str(response), mimetype='text/xml')
 
+# @app.route('/recording-callback', methods=['POST'])
+# def recording_callback():
+#     """Handle recording status callbacks"""
+    
+#     logger.info("========= About to process conference recording =========")
+#     logger.info(f"All callback data: {request.values.to_dict()}")
+#     recording_url = request.values.get('RecordingUrl')
+#     recording_sid = request.values.get('RecordingSid')
+    
+#     logger.info("recording url", recording_url)
+#     logger.info("recording sid", recording_sid)
+#     print(f"Recording completed: {recording_sid}")
+#     print(f"Recording URL: {recording_url}")
+    
+#     return "OK"
+
 @app.route('/recording-callback', methods=['POST'])
 def recording_callback():
     """Handle recording status callbacks"""
     
-    logger.info("========= About to process conference recording =========")
+    logger.info("========= Recording Callback Received =========")
+    
+    # Log all incoming data from Twilio
     logger.info(f"All callback data: {request.values.to_dict()}")
+    
     recording_url = request.values.get('RecordingUrl')
     recording_sid = request.values.get('RecordingSid')
+    recording_status = request.values.get('RecordingStatus')  # Added this
     
-    logger.info("recording url", recording_url)
-    logger.info("recording sid", recording_sid)
-    print(f"Recording completed: {recording_sid}")
-    print(f"Recording URL: {recording_url}")
+    logger.info(f"Recording Status: {recording_status}")
+    logger.info(f"Recording URL: {recording_url}")
+    logger.info(f"Recording SID: {recording_sid}")
+    
+    # More detailed logging
+    if recording_url:
+        logger.info("Recording URL received successfully")
+    else:
+        logger.warning("No recording URL in callback")
+        
+    logger.info("========= Recording Callback Completed =========")
     
     return "OK"
-
 @app.route('/conference-status', methods=['POST'])
 def conference_status():
     """Handle conference status callbacks"""
