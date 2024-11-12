@@ -40,7 +40,7 @@ def join_conference():
         record='record-from-start',
         recordingStatusCallback='https://voice-meeting-summarizer.onrender.com/recording-callback',
         statusCallback='https://voice-meeting-summarizer.onrender.com/conference-status',
-        statusCallbackEvent=['start', 'end', 'join', 'leave'],
+        statusCallbackEvent='start' 'end' 'join' 'leave',
         waitUrl='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical'
     )
     
