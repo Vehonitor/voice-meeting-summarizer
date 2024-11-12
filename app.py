@@ -40,7 +40,7 @@ def join_conference():
         record='record-from-start',
         recordingStatusCallback='https://voice-meeting-summarizer.onrender.com/recording-callback',
         statusCallback='https://voice-meeting-summarizer.onrender.com/conference-status',
-        statusCallbackEvent='start' 'end' 'join' 'leave',
+        statusCallbackEvent='start end join leave',
         waitUrl='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical'
     )
     
@@ -52,6 +52,7 @@ def recording_callback():
     """Handle recording status callbacks"""
     
     logger.info("========= About to process conference recording =========")
+    logger.info(f"All callback data: {request.values.to_dict()}")
     recording_url = request.values.get('RecordingUrl')
     recording_sid = request.values.get('RecordingSid')
     
