@@ -38,8 +38,8 @@ def join_conference():
     dial.conference(
         'MeetingRoom',
         record='record-from-start',
-        recordingStatusCallback='/recording-callback',
-        statusCallback='/conference-status',
+        recordingStatusCallback='https://voice-meeting-summarizer.onrender.com/recording-callback',
+        statusCallback='https://voice-meeting-summarizer.onrender.com/conference-status',
         statusCallbackEvent=['start', 'end', 'join', 'leave'],
         waitUrl='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical'
     )
@@ -50,10 +50,13 @@ def join_conference():
 @app.route('/recording-callback', methods=['POST'])
 def recording_callback():
     """Handle recording status callbacks"""
+    
+    logger.info("========= About to process conference recording =========")
     recording_url = request.values.get('RecordingUrl')
     recording_sid = request.values.get('RecordingSid')
     
     logger.info("recording url", recording_url)
+    logger.info("recording sid", recording_sid)
     print(f"Recording completed: {recording_sid}")
     print(f"Recording URL: {recording_url}")
     
@@ -62,6 +65,7 @@ def recording_callback():
 @app.route('/conference-status', methods=['POST'])
 def conference_status():
     """Handle conference status callbacks"""
+    logger.info("========= Conference Status =========")
     conference_sid = request.values.get('ConferenceSid')
     event_type = request.values.get('StatusCallbackEvent')
     
