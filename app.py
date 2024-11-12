@@ -47,6 +47,9 @@ def join_conference():
         recording_status_callback_method='POST',
         recording_status_callback_event='in-progress completed absent',
         recording_channels='mono',
+        startConferenceOnEnter=True,      # Conference starts when anyone joins
+        endConferenceOnExit=False,        # Don't end when anyone leaves
+        maxParticipants=10
     )
     
     response.append(dial)
@@ -74,6 +77,9 @@ def conference_status():
     logger.info("========= Conference Status =========")
     conference_sid = request.values.get('ConferenceSid')
     event_type = request.values.get('StatusCallbackEvent')
+    
+    logger.info("=== conference sid", conference_sid)
+    logger.info("==event type=====", event_type)
     
     print(f"Conference {conference_sid} event: {event_type}")
     
