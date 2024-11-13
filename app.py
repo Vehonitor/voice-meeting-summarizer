@@ -35,41 +35,39 @@ def join_conference():
     dial = Dial()
     
     # Add participant to conference
+    # dial.conference(
+    #     'MeetingRoom',
+    #     record=True,
+    #     # record='record-from-start',
+    #     recordingStatusCallback='https://voice-meeting-summarizer.onrender.com/recording-callback',
+    #     recordingStatusCallbackEvent='in-progress completed',
+    #     statusCallback='https://voice-meeting-summarizer.onrender.com/conference-status',
+    #     statusCallbackEvent='start end join leave',
+    #     waitUrl='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical',
+    #     recording_status_callback_method='POST',
+    #     recording_status_callback_event='in-progress completed absent',
+    #     recording_channels='mono',
+    #     startConferenceOnEnter=True,      # Conference starts when anyone joins
+    #     endConferenceOnExit=False,        # Don't end when anyone leaves
+    #     maxParticipants=10
+    # )
+    
     dial.conference(
         'MeetingRoom',
-        record=True,
-        # record='record-from-start',
-        recordingStatusCallback='https://voice-meeting-summarizer.onrender.com/recording-callback',
-        recordingStatusCallbackEvent='in-progress completed',
-        statusCallback='https://voice-meeting-summarizer.onrender.com/conference-status',
-        statusCallbackEvent='start end join leave',
-        waitUrl='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical',
+        start_conference_on_enter=True,
+        end_conference_on_exit=False,
+        record=True,                 # Enable recording
+        recording_status_callback='https://voice-meeting-summarizer.onrender.com/recording-callback',  # Changed from recordingStatusCallback
+        recording_status_callback_event='in-progress completed',  # Specify when to send callbacks
         recording_status_callback_method='POST',
-        recording_status_callback_event='in-progress completed absent',
-        recording_channels='mono',
-        startConferenceOnEnter=True,      # Conference starts when anyone joins
-        endConferenceOnExit=False,        # Don't end when anyone leaves
-        maxParticipants=10
+        status_callback='https://voice-meeting-summarizer.onrender.com/conference-status',
+        status_callback_event='start end join leave',
+        status_callback_method='POST',
+        wait_url='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical'
     )
     
     response.append(dial)
     return Response(str(response), mimetype='text/xml')
-
-# @app.route('/recording-callback', methods=['POST'])
-# def recording_callback():
-#     """Handle recording status callbacks"""
-    
-#     logger.info("========= About to process conference recording =========")
-#     logger.info(f"All callback data: {request.values.to_dict()}")
-#     recording_url = request.values.get('RecordingUrl')
-#     recording_sid = request.values.get('RecordingSid')
-    
-#     logger.info("recording url", recording_url)
-#     logger.info("recording sid", recording_sid)
-#     print(f"Recording completed: {recording_sid}")
-#     print(f"Recording URL: {recording_url}")
-    
-#     return "OK"
 
 @app.route('/recording-callback', methods=['POST'])
 def recording_callback():
@@ -97,6 +95,7 @@ def recording_callback():
     logger.info("========= Recording Callback Completed =========")
     
     return "OK"
+
 @app.route('/conference-status', methods=['POST'])
 def conference_status():
     """Handle conference status callbacks"""
