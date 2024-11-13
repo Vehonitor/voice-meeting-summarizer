@@ -6,7 +6,7 @@ import os
 import logging
 import requests
 import tempfile
-import openai
+from openai import OpenAI
 
 
 # Load environment variables
@@ -17,8 +17,8 @@ app = Flask(__name__)
 
 
 # Initialize OpenAI client
-# client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-openai.api_key = os.getenv('OPENAI_API_KEY')
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+# openai.api_key = os.getenv('OPENAI_API_KEY')
 
 
 logging.basicConfig(level=logging.INFO)
@@ -146,7 +146,7 @@ def recording_callback():
     try:
         logger.info("Transcribing with Whisper...")
         with open(temp_file_path, "rb") as audio_file:
-            transcript_response = openai.Audio.transcribe(
+            transcript_response = client.audio.transcriptions.create(
                 model="whisper-1",
                 file=audio_file,
                 language="en",
@@ -175,14 +175,17 @@ def recording_callback():
     try:
         logger.info("Generating summary with GPT...")
         summary_prompt = f"Summarize the following text in a concise manner:\n\n{transcript_text}"
-        summary_response = openai.Completion.create(
+        summary_response = client.chat.completions.create(
             model="gpt-4",
-            prompt=summary_prompt,
+             messages=[
+        {"role": "system", "content": "You are a helpful assistant that summarizes conversations accurately."},
+        {"role": "user", "content": f"Summarize the following text in a concise manner:\n\n{transcript_text}"}
+    ],
             max_tokens=100,
             temperature=0.5
         )
         
-        summary = summary_response.choices[0].text.strip()
+        summary = summary_response.choices[0].message.content.strip()
         logger.info(f"Generated summary: {summary}")
     
     except Exception as e:
@@ -215,7 +218,7 @@ def test_openai_connection():
     """Test OpenAI API connection"""
     try:
         # Simple test completion
-        response = openai.chat.completions.create(
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "user", "content": "Hello, this is a test!"}
