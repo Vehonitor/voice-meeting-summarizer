@@ -34,38 +34,25 @@ def join_conference():
     # Create a dial element
     dial = Dial()
     
-    # Add participant to conference
-    # dial.conference(
-    #     'MeetingRoom',
-    #     record=True,
-    #     # record='record-from-start',
-    #     recordingStatusCallback='https://voice-meeting-summarizer.onrender.com/recording-callback',
-    #     recordingStatusCallbackEvent='in-progress completed',
-    #     statusCallback='https://voice-meeting-summarizer.onrender.com/conference-status',
-    #     statusCallbackEvent='start end join leave',
-    #     waitUrl='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical',
-    #     recording_status_callback_method='POST',
-    #     recording_status_callback_event='in-progress completed absent',
-    #     recording_channels='mono',
-    #     startConferenceOnEnter=True,      # Conference starts when anyone joins
-    #     endConferenceOnExit=False,        # Don't end when anyone leaves
-    #     maxParticipants=10
-    # )
-    
     dial.conference(
         'MeetingRoom',
-        start_conference_on_enter=True,
-        end_conference_on_exit=False,
-        record=True,                 # Enable recording
-        recording_status_callback='https://voice-meeting-summarizer.onrender.com/recording-callback',  # Changed from recordingStatusCallback
-        recording_status_callback_event='in-progress completed',  # Specify when to send callbacks
+        start_conference_on_enter=True,     # Start conference when first person joins
+        end_conference_on_exit=False,       # Don't end when someone leaves
+        record=True,
+        recording_status_callback='https://voice-meeting-summarizer.onrender.com/recording-callback',
+        recording_status_callback_event='in-progress completed',
         recording_status_callback_method='POST',
         status_callback='https://voice-meeting-summarizer.onrender.com/conference-status',
         status_callback_event='start end join leave',
         status_callback_method='POST',
-        wait_url='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical'
+        wait_url='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical',
+        beep=True,                         # Optional: play beep when someone joins
+        muted=False,                       # Ensure participants aren't muted
+        start_on_enter=True,              # Alternative parameter name
+        end_on_exit=False                 # Alternative parameter name
     )
     
+    logger.info("=== dial object ====", dial)
     response.append(dial)
     return Response(str(response), mimetype='text/xml')
 
@@ -103,7 +90,8 @@ def conference_status():
     conference_sid = request.values.get('ConferenceSid')
     event_type = request.values.get('StatusCallbackEvent')
     
-    print(f"Conference {conference_sid} event: {event_type}")
+    logger.info("=== conference id====", conference_sid)
+    logger.info(" ===event type ===", event_type)
     
     return "OK"
 
