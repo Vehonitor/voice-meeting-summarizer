@@ -104,12 +104,12 @@ def test_transcription():
     """Test endpoint with mock recording data"""
     mock_recording_data = {
         'RecordingSid': 'RE123456789',
-        'RecordingUrl': 'https://api.twilio.com/2010-04-01/Accounts/AC123/Recordings/RE123456789.mp3',
+        # Use a publicly accessible audio URL for testing
+        'RecordingUrl': 'https://github.com/CompVis/latent-diffusion/raw/main/data/inpainting_examples/overture.mp3',
         'RecordingStatus': 'completed',
         'RecordingDuration': '30'
     }
     
-    # Process this mock data just as we would in the real callback
     return process_recording(mock_recording_data)
 
 def process_recording(recording_data):
@@ -117,16 +117,33 @@ def process_recording(recording_data):
     try:
         logger.info(f"Processing recording: {recording_data['RecordingSid']}")
         
-        # Here we'll add:
-        # 1. Audio download
-        # 2. Whisper transcription
-        # 3. GPT processing
+        # Download the audio file
+        response = requests.get(recording_data['RecordingUrl'])
+        
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
+            temp_file.write(response.content)
+            temp_file_path = temp_file.name
+        
+        # Transcribe with Whisper
+        with open(temp_file_path, "rb") as audio_file:
+            transcript = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
+            
+        logger.info(" ==== transcript ====", transcript)
+        
+        # Clean up temp file
+        os.unlink(temp_file_path)
         
         return {
             "status": "success",
             "message": "Recording processed successfully",
-            "recording_sid": recording_data['RecordingSid']
+            "recording_sid": recording_data['RecordingSid'],
+            "transcript": transcript.text
         }
+        
     except Exception as e:
         logger.error(f"Error processing recording: {str(e)}")
         return {
