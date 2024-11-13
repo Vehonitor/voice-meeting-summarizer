@@ -36,23 +36,23 @@ def join_conference():
     
     dial.conference(
         'MeetingRoom',
-        start_conference_on_enter=True,     # Start conference when first person joins
-        end_conference_on_exit=False,       # Don't end when someone leaves
+        startConferenceOnEnter=True,      # Correct attribute name
+        endConferenceOnExit=False,        # Correct attribute name
         record=True,
-        recording_status_callback='https://voice-meeting-summarizer.onrender.com/recording-callback',
-        recording_status_callback_event='in-progress completed',
-        recording_status_callback_method='POST',
-        status_callback='https://voice-meeting-summarizer.onrender.com/conference-status',
-        status_callback_event='start end join leave',
-        status_callback_method='POST',
-        wait_url='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical',
-        beep=True,                         # Optional: play beep when someone joins
-        muted=False,                       # Ensure participants aren't muted
-        start_on_enter=True,              # Alternative parameter name
-        end_on_exit=False                 # Alternative parameter name
+        recordingStatusCallback='https://voice-meeting-summarizer.onrender.com/recording-callback',
+        recordingStatusCallbackEvent='in-progress completed',
+        recordingStatusCallbackMethod='POST',
+        statusCallback='https://voice-meeting-summarizer.onrender.com/conference-status',
+        statusCallbackEvent='start end join leave',
+        statusCallbackMethod='POST',
+        waitUrl='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical',
+        beep=True,
+        muted=False
     )
     
-    logger.info("=== dial object ====", dial)
+    logger.info("Generated TwiML: %s", str(response))
+
+    
     response.append(dial)
     return Response(str(response), mimetype='text/xml')
 
