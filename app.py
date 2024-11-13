@@ -4,6 +4,9 @@ from twilio.rest import Client
 from dotenv import load_dotenv
 import os
 import logging
+import requests
+import tempfile
+from openai import OpenAI
 
 
 # Load environment variables
@@ -11,6 +14,10 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
+
+
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,8 +43,8 @@ def join_conference():
     
     dial.conference(
         'MeetingRoom',
-        startConferenceOnEnter=True,      # Correct attribute name
-        endConferenceOnExit=False,        # Correct attribute name
+        startConferenceOnEnter="true",      # Correct attribute name
+        endConferenceOnExit="true",        # Correct attribute name
         record=True,
         recordingStatusCallback='https://voice-meeting-summarizer.onrender.com/recording-callback',
         recordingStatusCallbackEvent='in-progress completed',
@@ -51,7 +58,6 @@ def join_conference():
     )
     
     logger.info("Generated TwiML: %s", str(response))
-
     
     response.append(dial)
     return Response(str(response), mimetype='text/xml')
@@ -90,10 +96,66 @@ def conference_status():
     conference_sid = request.values.get('ConferenceSid')
     event_type = request.values.get('StatusCallbackEvent')
     
-    logger.info("=== conference id====", conference_sid)
-    logger.info(" ===event type ===", event_type)
-    
     return "OK"
+
+
+@app.route('/test-transcription', methods=['GET'])
+def test_transcription():
+    """Test endpoint with mock recording data"""
+    mock_recording_data = {
+        'RecordingSid': 'RE123456789',
+        'RecordingUrl': 'https://api.twilio.com/2010-04-01/Accounts/AC123/Recordings/RE123456789.mp3',
+        'RecordingStatus': 'completed',
+        'RecordingDuration': '30'
+    }
+    
+    # Process this mock data just as we would in the real callback
+    return process_recording(mock_recording_data)
+
+def process_recording(recording_data):
+    """Process recording data and prepare for OpenAI"""
+    try:
+        logger.info(f"Processing recording: {recording_data['RecordingSid']}")
+        
+        # Here we'll add:
+        # 1. Audio download
+        # 2. Whisper transcription
+        # 3. GPT processing
+        
+        return {
+            "status": "success",
+            "message": "Recording processed successfully",
+            "recording_sid": recording_data['RecordingSid']
+        }
+    except Exception as e:
+        logger.error(f"Error processing recording: {str(e)}")
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+        
+def test_openai_connection():
+    """Test OpenAI API connection"""
+    try:
+        # Simple test completion
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "user", "content": "Hello, this is a test!"}
+            ]
+        )
+        return True, "OpenAI connection successful"
+    except Exception as e:
+        return False, f"OpenAI connection failed: {str(e)}"
+
+@app.route('/test-openai', methods=['GET'])
+def test_openai():
+    """Test endpoint for OpenAI connection"""
+    success, message = test_openai_connection()
+    return {
+        "success": success,
+        "message": message
+    }
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=os.getenv('PORT', 5005))
