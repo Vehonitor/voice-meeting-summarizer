@@ -37,27 +37,22 @@ def join_conference():
     """Handle incoming calls and add them to conference"""
     logger.info("========= Conference Joined =========")
     response = VoiceResponse()
-    
-    # Create a dial element
     dial = Dial()
     
+    # Simplified conference setup
     dial.conference(
         'MeetingRoom',
-        startConferenceOnEnter="true",      # Correct attribute name
-        endConferenceOnExit="true",        # Correct attribute name
         record=True,
+        startConferenceOnEnter=True,
+        endConferenceOnExit=False,
         recordingStatusCallback='https://voice-meeting-summarizer.onrender.com/recording-callback',
-        recordingStatusCallbackEvent='in-progress completed',
         recordingStatusCallbackMethod='POST',
+        recordingStatusCallbackEvent='in-progress completed',
+        beep=True,
         statusCallback='https://voice-meeting-summarizer.onrender.com/conference-status',
         statusCallbackEvent='start end join leave',
-        statusCallbackMethod='POST',
-        waitUrl='http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical',
-        beep=True,
-        muted=False
+        statusCallbackMethod='POST'
     )
-    
-    logger.info("Generated TwiML: %s", str(response))
     
     response.append(dial)
     return Response(str(response), mimetype='text/xml')
@@ -97,59 +92,6 @@ def conference_status():
     event_type = request.values.get('StatusCallbackEvent')
     
     return "OK"
-
-
-@app.route('/test-transcription', methods=['GET'])
-def test_transcription():
-    """Test endpoint with mock recording data"""
-    mock_recording_data = {
-        'RecordingSid': 'RE123456789',
-        # Use a publicly accessible audio URL for testing
-        'RecordingUrl': 'https://github.com/CompVis/latent-diffusion/raw/main/data/inpainting_examples/overture.mp3',
-        'RecordingStatus': 'completed',
-        'RecordingDuration': '30'
-    }
-    
-    return process_recording(mock_recording_data)
-
-def process_recording(recording_data):
-    """Process recording data and prepare for OpenAI"""
-    try:
-        logger.info(f"Processing recording: {recording_data['RecordingSid']}")
-        
-        # Download the audio file
-        response = requests.get(recording_data['RecordingUrl'])
-        
-        # Create a temporary file
-        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
-            temp_file.write(response.content)
-            temp_file_path = temp_file.name
-        
-        # Transcribe with Whisper
-        with open(temp_file_path, "rb") as audio_file:
-            transcript = client.audio.transcriptions.create(
-                model="whisper-1",
-                file=audio_file
-            )
-            
-        logger.info(" ==== transcript ====", transcript)
-        
-        # Clean up temp file
-        os.unlink(temp_file_path)
-        
-        return {
-            "status": "success",
-            "message": "Recording processed successfully",
-            "recording_sid": recording_data['RecordingSid'],
-            "transcript": transcript.text
-        }
-        
-    except Exception as e:
-        logger.error(f"Error processing recording: {str(e)}")
-        return {
-            "status": "error",
-            "message": str(e)
-        }
         
 def test_openai_connection():
     """Test OpenAI API connection"""
