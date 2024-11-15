@@ -61,56 +61,6 @@ def join_conference():
     response.append(dial)
     return Response(str(response), mimetype='text/xml')
 
-# @app.route('/recording-callback', methods=['POST'])
-# def recording_callback():
-        
-#     logger.info("========= Recording Callback Received =========")    
-#     # Log all incoming data from Twilio
-#     logger.info(f"All callback data: {request.values.to_dict()}")
-    
-#     recording_url = request.values.get('RecordingUrl')
-#     recording_sid = request.values.get('RecordingSid')
-#     recording_status = request.values.get('RecordingStatus')
-    
-#     logger.info(f"Recording Status: {recording_status}")
-#     logger.info(f"Recording URL: {recording_url}")
-#     logger.info(f"Recording SID: {recording_sid}")
-    
-#     if recording_status != 'completed':
-#         logger.info(f"Recording status is {recording_status}, waiting for completion")
-#         return "OK"
-    
-    
-#     try:
-#         # Download with authentication
-#         auth = (os.getenv('TWILIO_ACCOUNT_SID'), os.getenv('TWILIO_AUTH_TOKEN'))
-#         response = requests.get(recording_url, auth=auth)
-#         response.raise_for_status()  # Raises an error for bad status codes
-        
-#         # Create temporary file
-#         with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:
-#             temp_file.write(response.content)
-#             temp_file_path = temp_file.name
-#             logger.info(f"Audio saved to temporary file: {temp_file_path}")
-            
-#         return "OK"
-        
-#     except Exception as e:
-#         logger.error(f"Error downloading recording: {str(e)}")
-#         # return "OK"   
-#         return "Error downloading recording", 500
-    
-    
-#     # More detailed logging
-#     if recording_url:
-#         logger.info("Recording URL received successfully")
-#     else:
-#         logger.warning("No recording URL in callback")
-        
-#     logger.info("========= Recording Callback Completed =========")
-    
-#     return "OK"
-
 @app.route('/recording-callback', methods=['POST'])
 def recording_callback():
     """Handle Twilio recording callback"""
@@ -176,7 +126,6 @@ def recording_callback():
     # Step 3: Generate a summary using GPT
     try:
         logger.info("Generating summary with GPT...")
-        summary_prompt = f"Summarize the following text in a concise manner:\n\n{transcript_text}"
         summary_response = client.chat.completions.create(
             model="gpt-4",
              messages=[
@@ -208,7 +157,7 @@ def recording_callback():
     except Exception as e:
         logger.error(f"Error in recording callback: {str(e)}")
     
-    return "OK"
+    # return "OK"
 
     return {
         "status": "success",
@@ -282,7 +231,7 @@ def send_meeting_summary(transcript, summary, recording_sid):
                         border: 1px solid #eee;
                     }}
                     .recording-id {{
-                        color: #666;
+                        color: #fff;
                         font-size: 0.9em;
                     }}
                 </style>
@@ -309,12 +258,11 @@ def send_meeting_summary(transcript, summary, recording_sid):
             </body>
         </html>
         """
-
-        # Get recipients (we need to implement this)
-        recipients = get_meeting_participants() # We'll implement this function
+        
+        recipients = get_meeting_participants()
         
         message = Mail(
-            from_email=os.getenv('SENDGRID_FROM_EMAIL'),  # Verified sender in SendGrid
+            from_email=os.getenv('SENDGRID_FROM_EMAIL'),
             to_emails=recipients,
             subject='Your Meeting Summary',
             html_content=html_content
@@ -329,13 +277,6 @@ def send_meeting_summary(transcript, summary, recording_sid):
         return False
     
 def get_meeting_participants():
-    """
-    We need to implement this to either:
-    1. Get emails from conference participants
-    2. Get from predefined list
-    3. Get from environment variables
-    """
-    # For now, return list from environment variable
     recipients = os.getenv('MEETING_RECIPIENTS', '').split(',')
     if not recipients:
         # Fallback to default recipient
