@@ -92,7 +92,7 @@ def recording_callback():
     
     except Exception as e:
         logger.error(f"Error downloading recording: {str(e)}")
-        return "Error downloading recording", 500
+        return "Error downloading recording ", 500
     
     # Step 1: Transcribe the audio using Whisper
     try:
